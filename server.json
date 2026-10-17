@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.Misar-AI/misarpost-mcp",
   "title": "MisarPost MCP Server",
-  "description": "Plan, generate, schedule and repurpose posts across every connected channel, and track what performs…",
+  "description": "Plan, generate, schedule and repurpose posts across every connected channel, and track what…",
   "version": "3.0.0",
   "repository": {
     "url": "https://github.com/Misar-AI/misarpost-mcp",
