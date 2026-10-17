@@ -1,0 +1,16 @@
+{
+  "context_servers": {
+    "misarpost": {
+      "command": {
+        "path": "npx",
+        "args": [
+          "-y",
+          "@misarpost/mcp@latest"
+        ],
+        "env": {
+          "MISARPOST_API_KEY": "mpk_YOUR_KEY_HERE"
+        }
+      }
+    }
+  }
+}

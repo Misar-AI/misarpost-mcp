@@ -1,0 +1,22 @@
+{
+  "name": "misar",
+  "owner": {
+    "name": "Misar.AI",
+    "email": "support@misar.io",
+    "url": "https://misar.io"
+  },
+  "metadata": {
+    "description": "Official Misar.AI plugins — email, publishing, and growth tooling for AI agents.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "misarpost",
+      "source": "https://github.com/Misar-AI/misarpost-mcp",
+      "description": "Plan, generate, schedule and repurpose posts across every connected channel, and track what performs — from any AI assistant.",
+      "version": "3.0.0",
+      "category": "social-media",
+      "strict": false
+    }
+  ]
+}

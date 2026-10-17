@@ -1,0 +1,33 @@
+{
+  "name": "misarpost",
+  "version": "3.0.0",
+  "description": "Plan, generate, schedule and repurpose posts across every connected channel, and track what performs — from any AI assistant.",
+  "author": {
+    "name": "Misar.AI",
+    "email": "support@misar.io",
+    "url": "https://misar.io"
+  },
+  "homepage": "https://www.misarpost.com",
+  "repository": "https://github.com/Misar-AI/misarpost-mcp",
+  "license": "MIT",
+  "keywords": [
+    "social-media",
+    "content",
+    "scheduling",
+    "marketing",
+    "automation",
+    "analytics"
+  ],
+  "mcpServers": {
+    "misarpost": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@misarpost/mcp@latest"
+      ],
+      "env": {
+        "MISARPOST_API_KEY": "${MISARPOST_API_KEY}"
+      }
+    }
+  }
+}

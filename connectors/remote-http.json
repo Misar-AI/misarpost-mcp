@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "misarpost": {
+      "type": "streamable-http",
+      "url": "https://api.misar.io/post/mcp",
+      "headers": {
+        "Authorization": "Bearer mpk_YOUR_KEY_HERE"
+      }
+    }
+  }
+}

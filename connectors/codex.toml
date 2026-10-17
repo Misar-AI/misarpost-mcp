@@ -1,0 +1,7 @@
+# MisarPost MCP server for Codex.
+# Append to ~/.codex/config.toml
+
+[mcp_servers.misarpost]
+command = "npx"
+args = ["-y", "@misarpost/mcp@latest"]
+env = { MISARPOST_API_KEY = "mpk_YOUR_KEY_HERE" }

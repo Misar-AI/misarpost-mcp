@@ -1,0 +1,53 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Misar-AI/misarpost-mcp",
+  "title": "MisarPost MCP Server",
+  "description": "Plan, generate, schedule and repurpose posts across every connected channel, and track what performs…",
+  "version": "3.0.0",
+  "repository": {
+    "url": "https://github.com/Misar-AI/misarpost-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://www.misarpost.com",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@misarpost/mcp",
+      "version": "3.0.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MISARPOST_API_KEY",
+          "description": "Your MisarPost API key (mpk_…). Create one at https://post.misar.io/dashboard/api-keys.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true
+        },
+        {
+          "name": "MISARPOST_BASE_URL",
+          "description": "Override the API base URL. Only needed for self-hosted instances.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.misar.io/post/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "MisarPost API key. Format: Bearer mpk_… — create one at https://post.misar.io/dashboard/api-keys",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

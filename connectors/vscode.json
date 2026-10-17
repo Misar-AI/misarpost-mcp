@@ -1,0 +1,23 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "misarpost-key",
+      "description": "MisarPost API key (mpk_…) — create one at https://post.misar.io/dashboard/api-keys",
+      "password": true
+    }
+  ],
+  "servers": {
+    "misarpost": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@misarpost/mcp@latest"
+      ],
+      "env": {
+        "MISARPOST_API_KEY": "${input:misarpost-key}"
+      }
+    }
+  }
+}

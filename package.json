@@ -1,0 +1,98 @@
+{
+  "name": "@misarpost/mcp",
+  "version": "3.0.0",
+  "mcpName": "io.github.Misar-AI/misarpost-mcp",
+  "description": "MisarPost MCP server — schedule and publish posts, generate drafts with AI, repurpose content across channels, and report on performance from Claude, Cursor, VS Code, Windsurf and any MCP client.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./http": {
+      "types": "./dist/http.d.ts",
+      "import": "./dist/http.js"
+    },
+    "./registry": {
+      "types": "./dist/registry.d.ts",
+      "import": "./dist/registry.js"
+    }
+  },
+  "bin": {
+    "misarpost-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "smithery.yaml",
+    "server.json",
+    "README.md",
+    "INSTALL.md",
+    "skills",
+    "agents",
+    "connectors",
+    "customgpt",
+    "web-skills"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "social-media",
+    "social-media-scheduler",
+    "content",
+    "content-calendar",
+    "scheduling",
+    "publishing",
+    "repurposing",
+    "marketing",
+    "automation",
+    "analytics",
+    "ai-writing",
+    "twitter",
+    "linkedin",
+    "instagram",
+    "threads",
+    "bluesky",
+    "claude",
+    "claude-code",
+    "cursor",
+    "windsurf",
+    "vscode",
+    "ai-agent",
+    "misarpost"
+  ],
+  "homepage": "https://www.misarpost.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Misar-AI/misarpost-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Misar-AI/misarpost-mcp/issues"
+  },
+  "author": "Misar.AI <support@misar.io>",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/node": "^20.19.43"
+  },
+  "engines": {
+    "node": ">=18.20.8"
+  }
+}

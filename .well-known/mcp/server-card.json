@@ -1,0 +1,483 @@
+{
+  "serverInfo": {
+    "name": "MisarPost",
+    "version": "3.0.0",
+    "logoUrl": "https://post.misar.io/logo-light.png"
+  },
+  "websiteUrl": "https://www.misarpost.com",
+  "documentationUrl": "https://docs.misar.io/post/mcp",
+  "authentication": {
+    "required": true,
+    "schemes": [
+      "bearer"
+    ],
+    "tokenUrl": "https://post.misar.io/dashboard/api-keys"
+  },
+  "capabilities": {
+    "tools": true,
+    "prompts": true,
+    "resources": true
+  },
+  "tools": [
+    {
+      "name": "list_connections",
+      "description": "List the user's active connected social accounts with their account ID, platform and display name. Call this before scheduling: schedule_post needs the connected_account_id, and a post can only go to an account that is connected and active."
+    },
+    {
+      "name": "list_publish_options",
+      "description": "Look up the destinations a connected account can publish into — Discord or Slack channels, Pinterest boards, Reddit post flairs, Hashnode or Medium publications, Hashnode tags, Lemmy communities, Listmonk lists or templates, Skool groups, Whop forums, or WordPress categories and tags. Use the returned ids in schedule_post's platform_meta. Reads live from the platform, so an empty list can also mean the platform could not be reached."
+    },
+    {
+      "name": "list_account_plugs",
+      "description": "Show the plugs (automatic follow-up actions — e.g. reposting or resharing a post once it passes a likes or reactions threshold, on X, Bluesky, Threads and LinkedIn) available for one connected account, how each is currently configured and activated, and the account's 20 most recent plug runs."
+    },
+    {
+      "name": "configure_account_plug",
+      "description": "Turn a plug on or off for one connected account and set its configuration, replacing the plug's previous configuration. An activated plug later acts on that account's published posts automatically, in public, without asking again — confirm the exact plug and settings with the user first. Get valid plug keys and config fields from list_account_plugs."
+    },
+    {
+      "name": "list_posts",
+      "description": "List the user's scheduled and published posts, newest-scheduled first, 20 per page, with platform, status, scheduled/published time, post URL, tags and engagement metrics. Filter by status (e.g. queued or pending for what is coming up — the content calendar — or published for what went out) or by tag."
+    },
+    {
+      "name": "schedule_post",
+      "description": "Schedule a post to ONE connected account at a given time, or publish it immediately with scheduled_at=\"now\". This queues real content for a real audience — show the user the exact text, account and time and get explicit approval first. To post the same content to several accounts, call once per account with the same post_batch_id. The user's post signature is appended server-side, and the safety gateway may refuse a post (account health, daily limits, duplicates)."
+    },
+    {
+      "name": "cancel_post",
+      "description": "Cancel a post that is still pending or queued, so it never publishes. Posts that are already publishing or published cannot be cancelled, and a cancelled post cannot be re-queued — it must be scheduled again. To change a post instead, use update_post. Confirm with the user first."
+    },
+    {
+      "name": "get_calendar",
+      "description": "Get every post scheduled between two dates (default: 7 days ago to 30 days ahead), oldest first, with platform, status, time, text, media, first comment and tags — the content calendar view. Optionally only posts with one tag. Needs a plan that includes the content calendar; otherwise it returns an upgrade message."
+    },
+    {
+      "name": "update_post",
+      "description": "Edit a post that has not gone out yet (status pending, queued or draft): its text, its scheduled time, its first comment, or its tags. Changing the time moves when it publishes, so confirm the new text and time with the user first. Published posts cannot be edited."
+    },
+    {
+      "name": "reply_to_post",
+      "description": "Post a public reply/comment on one of the user's ALREADY-PUBLISHED posts, on the platform it was published to. It goes live immediately and cannot be recalled from here. Show the user the exact text and get their explicit approval before calling. Not every platform supports replies; an unsupported one returns an error."
+    },
+    {
+      "name": "revert_post",
+      "description": "Delete an ALREADY-PUBLISHED post from the platform it went out on (unlike cancel_post, which only stops a post that has not published yet). This removes it from the user's live profile and cannot be undone. Get the user's explicit approval for this exact post first. The response includes the post's postBatchId, for revert_post_batch."
+    },
+    {
+      "name": "revert_post_batch",
+      "description": "\"Delete everywhere\": delete every published post from one batch (one compose or repurpose action sent to several accounts) from all of its platforms. Each platform is attempted separately and reported separately; some platforms (e.g. TikTok) have no delete API and need manual clean-up. Cannot be undone — get the user's explicit approval first."
+    },
+    {
+      "name": "share_post",
+      "description": "Create (or return the existing) public preview link for one of the user's posts. Anyone with the link can view the post without signing in, so get the user's explicit approval before sharing. Revoke it with unshare_post."
+    },
+    {
+      "name": "unshare_post",
+      "description": "Revoke a post's public preview link, so the old link stops working. Safe to call when no link exists."
+    },
+    {
+      "name": "list_drafts",
+      "description": "List up to 50 draft post variants awaiting review (status draft or pending_review), newest first — including AI-generated drafts from generate_posts — with platform, caption, hashtags, tone and source."
+    },
+    {
+      "name": "review_drafts",
+      "description": "Approve or reject several drafts at once by ID. Approving does NOT schedule or publish anything — use schedule_post for that. Rejected drafts drop out of list_drafts. Returns how many drafts were updated."
+    },
+    {
+      "name": "get_stats",
+      "description": "Get the account overview: connected accounts, posts queued, published this week and this month, drafts waiting, the last published post, the top performing post of the month, and the average engagement rate (null when no metrics exist yet)."
+    },
+    {
+      "name": "get_analytics_trends",
+      "description": "Get per-channel daily trends for the last 7, 30 or 90 days: posts published and failed, engagement and impressions, totals, and the change against the previous period. Each channel's metric field says whether real engagement data exists for it (engagement) or only publish volume (posts) — never present a posts-only channel's zero engagement as a real result."
+    },
+    {
+      "name": "get_growth_overview",
+      "description": "Get the Growth Hub overview for the last 7, 30 or 90 days: per-platform engagement trend lines, the weakest-performing platforms (bottlenecks), which post formats perform best, and which platforms have real trend data behind their suggestions. Requires the Empire plan; on other plans it returns an upgrade message."
+    },
+    {
+      "name": "list_growth_opportunities",
+      "description": "List rising trends worth posting about now, limited to the user's niches and to platforms they have connected, each with the hashtag, its growth, and a posting suggestion. Returns an empty list — never an invented one — when no real signal exists. Requires the Empire plan; on other plans it returns an upgrade message."
+    },
+    {
+      "name": "list_growth_playbooks",
+      "description": "Get per-platform growth playbooks for the user's connected platforms — cadence, format, timing and anti-spam guidance compiled from each platform's official creator documentation, with source links. Requires the Empire plan; on other plans it returns an upgrade message."
+    },
+    {
+      "name": "get_next_growth_opportunity",
+      "description": "Get the single best next content opportunity for the user's connected platforms and niches — a compact version of list_growth_opportunities. Returns `{ opportunity: null }` rather than an invented one when there is no real signal. Requires the Empire plan; on other plans it returns an upgrade message."
+    },
+    {
+      "name": "get_contentripple_usage",
+      "description": "Show how many ContentRipple repurposes the user has run this month, their monthly limit (null means unlimited), and their plan tier. Check before a large repurposing run so it does not stop halfway."
+    },
+    {
+      "name": "repurpose_content",
+      "description": "Turn one source — a URL, pasted text or markdown, or an RSS item — into channel-native variants such as an X thread, LinkedIn post or carousel, Instagram caption or reel script, newsletter, or YouTube description. Fetches the URL, extracts the core message, writes each variant with AI, and saves source and variants. Returns each saved variant with its id. Nothing is scheduled or published. Counts against the monthly ContentRipple allowance."
+    },
+    {
+      "name": "update_content_variant",
+      "description": "Edit a saved ContentRipple variant's text (which marks it edited) and/or set its status. Use the variant id returned by repurpose_content. Publishes nothing."
+    },
+    {
+      "name": "schedule_content_variant",
+      "description": "Schedule a saved ContentRipple variant (its text plus hashtags) to a connected account of the matching platform at a given time. Only these formats can be published: twitter_thread, linkedin_post, linkedin_carousel, instagram_caption, instagram_reel_script, threads_post, mastodon_post, bluesky_post — the rest are copy-only. This queues real content for a real audience; confirm the text, account and time with the user first."
+    },
+    {
+      "name": "fetch_content_feed",
+      "description": "Read an RSS or Atom feed and return its entries, so the user can pick one to repurpose with repurpose_content (source_type rss). Nothing is saved."
+    },
+    {
+      "name": "parse_content_source",
+      "description": "Extract the core message, key points and structure from a URL, pasted text (50-20,000 characters) or Markdown, without generating any variants — a preview of what repurpose_content would work from. Counts against the monthly repurpose limit and uses one AI text action, so prefer repurpose_content when the user wants variants anyway."
+    },
+    {
+      "name": "list_repurpose_history",
+      "description": "List past ContentRipple repurposes, newest first: each source (type, URL, title, core message) with its variants and, for variants that were scheduled, the post's status, URL and engagement."
+    },
+    {
+      "name": "delete_repurpose_source",
+      "description": "Delete one repurposed source and its variants from ContentRipple history. Posts already scheduled or published from it are not touched. This cannot be undone — confirm with the user first."
+    },
+    {
+      "name": "generate_posts",
+      "description": "Write AI post variants about a topic for one or more platforms — up to 5 per platform — and save them as drafts (visible in list_drafts). Nothing is scheduled or published. Each call counts against the plan's monthly AI generation allowance."
+    },
+    {
+      "name": "enhance_topic",
+      "description": "Rewrite a raw topic or idea into a structured content brief: a sharper topic, suggested tone, content angles and key messages for the chosen platforms. Saves nothing; counts against the monthly AI allowance. Feed the result to generate_plan or generate_posts."
+    },
+    {
+      "name": "generate_plan",
+      "description": "For a topic or brief, suggest hook options, the best posting time slots, and trending hashtags per platform. Saves nothing and schedules nothing; counts against the monthly AI allowance."
+    },
+    {
+      "name": "research_hashtags",
+      "description": "Build a tiered hashtag strategy for a keyword across platforms — broad, mid and niche tags plus each platform's algorithm signals. Saves nothing; counts against the monthly AI allowance."
+    },
+    {
+      "name": "get_optimization_insights",
+      "description": "Analyse the last 30 days of post metrics with AI and return the best time of day, best tone, top hashtags, prompt suggestions and per-platform insights. Changes nothing, but each call counts against the monthly AI allowance."
+    },
+    {
+      "name": "generate_image",
+      "description": "Generate an image for a post from a text prompt, sized for the platform (16:9 for X, LinkedIn and YouTube, square for Instagram and Threads, 9:16 for TikTok), and store it in the user's media. Returns its URL to attach to a post. Uses one AI image action from the plan's quota. Nothing is posted."
+    },
+    {
+      "name": "get_trends",
+      "description": "Get the latest trending hashtags and content hooks for the user's TrendPulse niches, each with a snapshot id. Returns cached results under two hours old, or refreshes them live from the trend sources."
+    },
+    {
+      "name": "queue_trend_drafts",
+      "description": "Turn 1–3 trend snapshots (from get_trends) into draft posts — one per snapshot for each platform the user has connected — saved to the draft queue (list_drafts). Nothing is scheduled or published."
+    },
+    {
+      "name": "schedule_trend_posts",
+      "description": "Publish posts about 1–3 trend snapshots to the given connected accounts, scheduled five minutes from now — one post per content hook per account, written from the trend's hooks. This puts real content in front of a real audience almost immediately and the user does not see the text first: show them get_trends' hooks and get explicit approval. Prefer queue_trend_drafts when they want to review."
+    },
+    {
+      "name": "refresh_trends",
+      "description": "Force a fresh fetch of trending hashtags from every trend source for the user's niches and store new snapshots, instead of waiting for the scheduled refresh. Needs a plan that includes manual refresh; otherwise it returns an upgrade message. Use get_trends afterwards to read them."
+    },
+    {
+      "name": "send_trend_digest",
+      "description": "Email the user their trend digest (top recent trends for their niches) now. It always goes to the account owner's own address — never anyone else. Returns `skipped` when the digest is turned off or there are no recent trends."
+    },
+    {
+      "name": "get_trend_hooks",
+      "description": "Get the content hooks (opening lines and angles) for one trend snapshot — snapshot ids come from get_trends."
+    },
+    {
+      "name": "get_trend_platform_content",
+      "description": "Get the per-platform content already generated for one trend snapshot — hashtags, plus title/description for YouTube and title/subtitle for Medium. Empty until generate_trend_platform_content has run for it."
+    },
+    {
+      "name": "generate_trend_platform_content",
+      "description": "Generate per-platform content (hashtags, and titles where a platform needs them) for one trend snapshot, for the platforms asked (default: all seven). Regenerating replaces the earlier content for those platforms. Nothing is posted — turn one into a draft with use_trend_platform_content."
+    },
+    {
+      "name": "use_trend_platform_content",
+      "description": "Turn one platform's generated trend content into a draft post (generating it first if needed). The draft lands in the review queue (list_drafts) — nothing is published or scheduled."
+    },
+    {
+      "name": "get_trend_performance",
+      "description": "Show how the user's trend-sourced posts actually performed: each TrendPulse draft (last 100) joined to whether it was scheduled or published and its likes, comments, reposts, impressions and reach."
+    },
+    {
+      "name": "list_post_templates",
+      "description": "List the user's saved post templates, most recently updated first — reusable composer states with text, per-platform overrides, target accounts, platform settings, media and first comment."
+    },
+    {
+      "name": "get_post_template",
+      "description": "Get one saved post template in full, by id — to reuse its text, accounts and settings in schedule_post."
+    },
+    {
+      "name": "create_post_template",
+      "description": "Save a reusable post template: default text, optional per-platform text, target accounts, platform settings, media and first comment. Saving publishes nothing."
+    },
+    {
+      "name": "update_post_template",
+      "description": "Change a saved post template. Only the fields passed are changed, and each one passed replaces the stored value entirely (e.g. account_ids replaces the whole list)."
+    },
+    {
+      "name": "delete_post_template",
+      "description": "Permanently delete a saved post template. Posts already scheduled from it are not affected. Confirm with the user first."
+    },
+    {
+      "name": "list_post_tags",
+      "description": "List the user's post tags (id, name, colour). Tag ids filter list_posts and get_calendar and are applied with schedule_post or update_post."
+    },
+    {
+      "name": "create_post_tag",
+      "description": "Create a post tag with a name and colour, for grouping posts by campaign or theme. Names must be unique per user."
+    },
+    {
+      "name": "update_post_tag",
+      "description": "Rename and/or recolour a post tag. Posts keep the tag."
+    },
+    {
+      "name": "delete_post_tag",
+      "description": "Permanently delete a post tag and remove it from every post that carries it. The posts themselves are not affected. Confirm with the user first."
+    },
+    {
+      "name": "list_media",
+      "description": "List the user's uploaded media library, newest first, 24 per page, with each file's public URL — usable directly in schedule_post's media_urls."
+    },
+    {
+      "name": "delete_media",
+      "description": "Permanently delete a file from the media library and storage. Posts that already include its URL keep their own copy of the URL, but the file behind it is gone. Confirm with the user first."
+    },
+    {
+      "name": "list_video_avatars",
+      "description": "List the stock presenter avatars available for AI video generation. Pass an avatar's id to generate_video."
+    },
+    {
+      "name": "list_video_voices",
+      "description": "List the stock voices available for AI video generation. Pass a voice's id to generate_video."
+    },
+    {
+      "name": "create_video_script",
+      "description": "Write a short talking-presenter video script from a post's text. Saves nothing; counts against the monthly AI allowance. Show the script to the user before generate_video."
+    },
+    {
+      "name": "generate_video",
+      "description": "Start rendering an AI presenter video from a script, avatar and voice. Returns a job id immediately; poll get_video_status until it completes. Rendering is metered and spends the user's video allowance — confirm the script first."
+    },
+    {
+      "name": "get_video_status",
+      "description": "Check an AI video job: processing, failed (with the error), or completed with the video's URL in the media storage — ready for schedule_post's media_urls."
+    },
+    {
+      "name": "list_personas",
+      "description": "List the user's PersonaForge personas — writing styles learned from a real account — plus extraction jobs still running and recent failures."
+    },
+    {
+      "name": "get_persona",
+      "description": "Get one persona in full: its name, cover image, source account, and the style profile used when writing in it."
+    },
+    {
+      "name": "create_persona",
+      "description": "Start learning a writing persona from recent posts — either a connected account (instagram, twitter, youtube) or a public profile (youtube, medium, mastodon, bluesky). Fetches the posts and analyses them with AI in the background (counts against the plan's AI image allowance, for the persona cover); returns a job id to poll with get_persona_job_status."
+    },
+    {
+      "name": "get_persona_job_status",
+      "description": "Check a persona extraction job started by create_persona: its status, the new persona's id once done, or the error."
+    },
+    {
+      "name": "rename_persona",
+      "description": "Rename a persona. Its learned voice is unchanged."
+    },
+    {
+      "name": "delete_persona",
+      "description": "Permanently delete a persona and its learned voice. Recreating it means re-running create_persona. Confirm with the user first."
+    },
+    {
+      "name": "generate_persona_post",
+      "description": "Write a post about a topic in a persona's voice (or the user's own trained voice when no persona is given), with a voice-match score. The post is saved for review, not scheduled. Counts against the monthly PersonaForge post allowance."
+    },
+    {
+      "name": "list_persona_replies",
+      "description": "List AI-drafted replies to inbound comments and messages, by status (default pending — the ones waiting for review)."
+    },
+    {
+      "name": "generate_persona_reply",
+      "description": "Draft a reply, in the user's trained voice, to an inbound comment or message on one of their posts. The draft is saved as pending for review (list_persona_replies) — nothing is sent. Needs a plan with PersonaForge replies."
+    },
+    {
+      "name": "review_persona_reply",
+      "description": "Approve, edit or reject one pending AI-drafted reply. Approving or editing adds the final text to the draft queue (list_drafts) — it is not posted. Reject marks it skipped. Act only on the user's decision."
+    },
+    {
+      "name": "get_voice_model",
+      "description": "Get the user's own trained voice model — tone breakdown, signature phrases, emoji patterns, average post length, preferred hooks, hashtag style and how many posts it learned from. `model` is null until train_voice_model has run."
+    },
+    {
+      "name": "train_voice_model",
+      "description": "Train (or retrain) the user's own voice model from their last 50 published posts. Replaces the existing voice model. Uses one AI text action from the plan's quota and fails with a clear message when the user has no published posts yet. Confirm with the user before retraining."
+    },
+    {
+      "name": "generate_bio_variants",
+      "description": "Generate two profile-bio variants for one platform in the user's trained voice — A authority-focused, B curiosity-focused — and save them as a bio A/B test. Optionally pass the current bio to improve on. Uses one AI text action. Nothing is changed on the platform itself."
+    },
+    {
+      "name": "list_competitor_personas",
+      "description": "List the competitor accounts the user has analysed, newest first, with posting frequency, content pillars, gaps, average engagement and best posting time."
+    },
+    {
+      "name": "analyze_competitor",
+      "description": "Analyse a competitor's public X (Twitter) or LinkedIn account — posting frequency, content pillars, gaps, engagement and best posting time — and save it (re-analysing the same handle updates it). Needs a plan that includes competitor analysis; otherwise it returns an upgrade message."
+    },
+    {
+      "name": "list_notifications",
+      "description": "List the user's MisarPost notifications (publish results, account problems and the like), newest first, with the unread count."
+    },
+    {
+      "name": "mark_notification_read",
+      "description": "Mark one notification as read, e.g. after relaying it to the user. It drops out of the unread count."
+    },
+    {
+      "name": "mark_all_notifications_read",
+      "description": "Mark every unread notification as read. There is no way to mark them unread again."
+    },
+    {
+      "name": "list_webhooks",
+      "description": "List the user's outbound webhooks — the URLs MisarPost sends signed event payloads to — with their events and whether each is active. Signing secrets are never returned."
+    },
+    {
+      "name": "create_webhook",
+      "description": "Register an outbound webhook: MisarPost will POST signed payloads for the chosen events to this URL from now on. The response carries the signing secret exactly once — tell the user to store it; it cannot be shown again. Sending account data to a new URL needs the user's explicit approval of that URL."
+    },
+    {
+      "name": "update_webhook",
+      "description": "Change an outbound webhook's URL or events, or pause/resume it with active. Only the fields passed change."
+    },
+    {
+      "name": "delete_webhook",
+      "description": "Permanently remove an outbound webhook; events stop being delivered to its URL. Confirm with the user first."
+    },
+    {
+      "name": "list_workspaces",
+      "description": "List the workspaces the user belongs to. When workspace scoping is on, posts, accounts and stats are limited to the active workspace."
+    }
+  ],
+  "prompts": [
+    {
+      "name": "plan_content_week",
+      "description": "Plan a week of posts grounded in past performance and what is already scheduled.",
+      "arguments": [
+        {
+          "name": "theme",
+          "description": "Theme or campaign for the week",
+          "required": false
+        },
+        {
+          "name": "channels",
+          "description": "Which channels to post to",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "repurpose_a_post",
+      "description": "Turn one piece of content into channel-native variants and schedule the approved ones.",
+      "arguments": [
+        {
+          "name": "source",
+          "description": "A URL, or the content itself",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "performance_review",
+      "description": "Report what performed, what did not, and the single most useful change.",
+      "arguments": [
+        {
+          "name": "days",
+          "description": "7, 30 or 90 (default 30)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "draft_queue_triage",
+      "description": "Review waiting drafts and decide what to schedule, edit or drop.",
+      "arguments": []
+    },
+    {
+      "name": "cross_post",
+      "description": "Publish one message to several connected accounts, adapted per platform, after approval.",
+      "arguments": [
+        {
+          "name": "message",
+          "description": "What to announce",
+          "required": true
+        },
+        {
+          "name": "when",
+          "description": "\"now\" or a date and time",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "trend_response",
+      "description": "Find a trend worth responding to and draft credible posts about it.",
+      "arguments": [
+        {
+          "name": "topic",
+          "description": "Area to look for trends in",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "reply_queue_review",
+      "description": "Review AI-drafted replies to comments and decide which to approve, edit or skip.",
+      "arguments": []
+    },
+    {
+      "name": "growth_opportunities",
+      "description": "Find what to post next from Growth Hub signals (Empire plan).",
+      "arguments": []
+    }
+  ],
+  "resources": [
+    {
+      "uri": "misarpost://connections",
+      "name": "Connected accounts",
+      "description": "Active connected accounts with their IDs and platforms. Read before planning or scheduling — a post can only go to an account that is connected and active.",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "misarpost://queue",
+      "name": "Scheduled queue",
+      "description": "The first page of queued posts — what is already scheduled — so new posts do not collide with it.",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "misarpost://drafts",
+      "name": "Draft queue",
+      "description": "Drafts awaiting review, so work in progress is resumed rather than restarted.",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "misarpost://stats",
+      "name": "Account overview",
+      "description": "Queued, published and draft counts, the top performing post of the month, and the average engagement rate.",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "misarpost://tags",
+      "name": "Post tags",
+      "description": "The user's post tags (id, name, colour), for tagging and filtering posts.",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "misarpost://templates",
+      "name": "Post templates",
+      "description": "Saved post templates — reusable text, target accounts and platform settings.",
+      "mimeType": "application/json"
+    }
+  ]
+}
