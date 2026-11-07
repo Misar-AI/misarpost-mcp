@@ -1,0 +1,2341 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MisarPost Actions",
+    "description": "Plan, generate, schedule and repurpose posts across every connected channel, and track what performs — from any AI assistant.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.misar.io/post"
+    }
+  ],
+  "paths": {
+    "/mcp/tools/list_connections": {
+      "post": {
+        "operationId": "list_connections",
+        "summary": "List connected accounts",
+        "description": "List the user's active connected social accounts with their account ID, platform and display name. Call this before scheduling: schedule_post needs the connected_account_id, and a post can only go to an account that is connected and active.",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/list_publish_options": {
+      "post": {
+        "operationId": "list_publish_options",
+        "summary": "List publish destinations",
+        "description": "Look up the destinations a connected account can publish into — Discord or Slack channels, Pinterest boards, Reddit post flairs, Hashnode or Medium publications, Hashnode tags, Lemmy communities, Listmonk lists or templates, Skool groups, Whop forums, or WordPress categories and tags. Use the return",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "account_id"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "discord_channels",
+                      "slack_channels",
+                      "pinterest_boards",
+                      "reddit_flairs",
+                      "hashnode_publications",
+                      "hashnode_tags",
+                      "medium_publications",
+                      "lemmy_communities",
+                      "listmonk_lists",
+                      "listmonk_templates",
+                      "skool_groups",
+                      "whop_forums",
+                      "wordpress_taxonomies"
+                    ],
+                    "description": "Which list to fetch; it must match the connected account's platform."
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "Connected account UUID — from list_connections."
+                  },
+                  "subreddit": {
+                    "type": "string",
+                    "description": "Subreddit name (without r/). Required for kind=reddit_flairs."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/list_posts": {
+      "post": {
+        "operationId": "list_posts",
+        "summary": "List posts",
+        "description": "List the user's scheduled and published posts, newest-scheduled first, 20 per page, with platform, status, scheduled/published time, post URL, tags and engagement metrics. Filter by status (e.g. queued or pending for what is coming up — the content calendar — or published for what went out) or by ta",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "queued",
+                      "publishing",
+                      "published",
+                      "failed",
+                      "rejected",
+                      "cancelled",
+                      "archived"
+                    ],
+                    "description": "Only posts in this status. Omit for every status except archived and cancelled."
+                  },
+                  "tag_id": {
+                    "type": "string",
+                    "description": "Only posts carrying this post tag (UUID)."
+                  },
+                  "page": {
+                    "type": "number",
+                    "description": "1-indexed page number (default 1, 20 posts per page)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/get_calendar": {
+      "post": {
+        "operationId": "get_calendar",
+        "summary": "Get content calendar",
+        "description": "Get every post scheduled between two dates (default: 7 days ago to 30 days ahead), oldest first, with platform, status, time, text, media, first comment and tags — the content calendar view. Optionally only posts with one tag. Needs a plan that includes the content calendar; otherwise it returns an ",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "Start date, YYYY-MM-DD (default 7 days ago)."
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "End date, YYYY-MM-DD, inclusive (default 30 days from now)."
+                  },
+                  "tag_id": {
+                    "type": "string",
+                    "description": "Only posts carrying this post tag (UUID)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/schedule_post": {
+      "post": {
+        "operationId": "schedule_post",
+        "summary": "Schedule or publish post",
+        "description": "Schedule a post to ONE connected account at a given time, or publish it immediately with scheduled_at=\"now\". This queues real content for a real audience — show the user the exact text, account and time and get explicit approval first. To post the same content to several accounts, call once per acco",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "connected_account_id",
+                  "platform",
+                  "content_text",
+                  "scheduled_at"
+                ],
+                "properties": {
+                  "connected_account_id": {
+                    "type": "string",
+                    "description": "Connected account UUID — from list_connections."
+                  },
+                  "platform": {
+                    "type": "string",
+                    "enum": [
+                      "twitter",
+                      "linkedin",
+                      "instagram",
+                      "threads",
+                      "tiktok",
+                      "bluesky",
+                      "mastodon",
+                      "youtube",
+                      "reddit",
+                      "pinterest",
+                      "dribbble",
+                      "slack",
+                      "discord",
+                      "facebook",
+                      "telegram",
+                      "devto",
+                      "farcaster",
+                      "gmb",
+                      "hashnode",
+                      "lemmy",
+                      "listmonk",
+                      "medium",
+                      "mewe",
+                      "moltbook",
+                      "nostr",
+                      "skool",
+                      "tumblr",
+                      "twitch",
+                      "vk",
+                      "linkedin_page",
+                      "instagram_standalone",
+                      "tiktok_business",
+                      "whop",
+                      "wordpress",
+                      "kick"
+                    ],
+                    "description": "Platform of that connected account (must match it)."
+                  },
+                  "content_text": {
+                    "type": "string",
+                    "description": "Post text, 1–5000 characters."
+                  },
+                  "scheduled_at": {
+                    "type": "string",
+                    "description": "ISO 8601 datetime with timezone (e.g. 2030-01-01T09:00:00Z), or \"now\" to publish immediately."
+                  },
+                  "media_urls": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Up to 10 publicly reachable media URLs to attach."
+                  },
+                  "first_comment": {
+                    "type": "string",
+                    "description": "Optional first comment posted under the post (max 2200 characters)."
+                  },
+                  "variant_id": {
+                    "type": "string",
+                    "description": "UUID of the draft (from list_drafts or generate_posts) this post was made from; marks that draft as scheduled."
+                  },
+                  "platform_meta": {
+                    "type": "object",
+                    "description": "Platform-specific publish settings, passed through to the publisher. Examples: Reddit { subreddit, flairId }, Pinterest { board }, Discord/Slack { channelId }, YouTube { title, privacyStatus }, Hashnode/Medium { publicationId }, Listmonk { listId, templateId }, Lemmy { communityId }, Skool { groupId }. Look up valid ids with list_publish_options.",
+                    "additionalProperties": true
+                  },
+                  "tag_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Up to 20 post tag UUIDs to apply."
+                  },
+                  "post_batch_id": {
+                    "type": "string",
+                    "description": "UUID shared by every call that posts the same content to different accounts, so they can later be managed together."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/update_post": {
+      "post": {
+        "operationId": "update_post",
+        "summary": "Edit scheduled post",
+        "description": "Edit a post that has not gone out yet (status pending, queued or draft): its text, its scheduled time, its first comment, or its tags. Changing the time moves when it publishes, so confirm the new text and time with the user first. Published posts cannot be edited.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "post_id"
+                ],
+                "properties": {
+                  "post_id": {
+                    "type": "string",
+                    "description": "Post UUID — from list_posts or get_calendar."
+                  },
+                  "content_text": {
+                    "type": "string",
+                    "description": "New post text."
+                  },
+                  "scheduled_at": {
+                    "type": "string",
+                    "description": "New ISO 8601 datetime with timezone offset, e.g. 2030-01-01T09:00:00+05:30."
+                  },
+                  "first_comment": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "New first comment, or null to remove it."
+                  },
+                  "tag_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Replace the post's tags with these post tag UUIDs (max 20); [] removes all."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/cancel_post": {
+      "post": {
+        "operationId": "cancel_post",
+        "summary": "Cancel scheduled post",
+        "description": "Cancel a post that is still pending or queued, so it never publishes. Posts that are already publishing or published cannot be cancelled, and a cancelled post cannot be re-queued — it must be scheduled again. To change a post instead, use update_post. Confirm with the user first.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "post_id"
+                ],
+                "properties": {
+                  "post_id": {
+                    "type": "string",
+                    "description": "Post UUID — from list_posts."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/list_drafts": {
+      "post": {
+        "operationId": "list_drafts",
+        "summary": "List drafts",
+        "description": "List up to 50 draft post variants awaiting review (status draft or pending_review), newest first — including AI-generated drafts from generate_posts — with platform, caption, hashtags, tone and source.",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/review_drafts": {
+      "post": {
+        "operationId": "review_drafts",
+        "summary": "Approve or reject drafts",
+        "description": "Approve or reject several drafts at once by ID. Approving does NOT schedule or publish anything — use schedule_post for that. Rejected drafts drop out of list_drafts. Returns how many drafts were updated.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action",
+                  "ids"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ],
+                    "description": "What to do with the drafts."
+                  },
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "description": "Draft UUIDs — from list_drafts."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/generate_posts": {
+      "post": {
+        "operationId": "generate_posts",
+        "summary": "Generate post drafts",
+        "description": "Write AI post variants about a topic for one or more platforms — up to 5 per platform — and save them as drafts (visible in list_drafts). Nothing is scheduled or published. Each call counts against the plan's monthly AI generation allowance.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "topic",
+                  "platforms"
+                ],
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "description": "Topic or brief for the posts (3–500 characters)."
+                  },
+                  "platforms": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "twitter",
+                        "linkedin",
+                        "instagram",
+                        "threads",
+                        "tiktok",
+                        "bluesky",
+                        "youtube"
+                      ]
+                    },
+                    "minItems": 1,
+                    "description": "Platforms to write for (at least one)."
+                  },
+                  "tone": {
+                    "type": "string",
+                    "enum": [
+                      "professional",
+                      "casual",
+                      "technical",
+                      "inspirational"
+                    ],
+                    "description": "Writing tone (default professional)."
+                  },
+                  "count": {
+                    "type": "number",
+                    "description": "Variants per platform, 1–5 (default 3)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/enhance_topic": {
+      "post": {
+        "operationId": "enhance_topic",
+        "summary": "Enhance topic into brief",
+        "description": "Rewrite a raw topic or idea into a structured content brief: a sharper topic, suggested tone, content angles and key messages for the chosen platforms. Saves nothing; counts against the monthly AI allowance. Feed the result to generate_plan or generate_posts.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "raw_topic",
+                  "platforms"
+                ],
+                "properties": {
+                  "raw_topic": {
+                    "type": "string",
+                    "description": "Raw topic or idea (3–500 characters)."
+                  },
+                  "goal": {
+                    "type": "string",
+                    "enum": [
+                      "awareness",
+                      "engagement",
+                      "conversion",
+                      "viral"
+                    ],
+                    "description": "Content goal (default engagement)."
+                  },
+                  "audience": {
+                    "type": "string",
+                    "description": "Target audience, up to 200 characters."
+                  },
+                  "platforms": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "twitter",
+                        "linkedin",
+                        "instagram",
+                        "threads",
+                        "tiktok",
+                        "bluesky"
+                      ]
+                    },
+                    "minItems": 1,
+                    "description": "Target platforms (at least one)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/generate_plan": {
+      "post": {
+        "operationId": "generate_plan",
+        "summary": "Generate posting plan",
+        "description": "For a topic or brief, suggest hook options, the best posting time slots, and trending hashtags per platform. Saves nothing and schedules nothing; counts against the monthly AI allowance.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "enhanced_topic",
+                  "platforms"
+                ],
+                "properties": {
+                  "enhanced_topic": {
+                    "type": "string",
+                    "description": "Topic or content brief (3–1000 characters), e.g. from enhance_topic."
+                  },
+                  "platforms": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "twitter",
+                        "linkedin",
+                        "instagram",
+                        "threads",
+                        "tiktok",
+                        "bluesky"
+                      ]
+                    },
+                    "minItems": 1,
+                    "description": "Target platforms (at least one)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/research_hashtags": {
+      "post": {
+        "operationId": "research_hashtags",
+        "summary": "Research hashtags",
+        "description": "Build a tiered hashtag strategy for a keyword across platforms — broad, mid and niche tags plus each platform's algorithm signals. Saves nothing; counts against the monthly AI allowance.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "keyword",
+                  "platforms"
+                ],
+                "properties": {
+                  "keyword": {
+                    "type": "string",
+                    "description": "Primary keyword or topic (2–200 characters)."
+                  },
+                  "niche": {
+                    "type": "string",
+                    "description": "Content niche, up to 100 characters."
+                  },
+                  "platforms": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "twitter",
+                        "linkedin",
+                        "instagram",
+                        "threads",
+                        "tiktok",
+                        "bluesky",
+                        "youtube"
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 7,
+                    "description": "Target platforms (at least one)."
+                  },
+                  "goal": {
+                    "type": "string",
+                    "enum": [
+                      "awareness",
+                      "engagement",
+                      "conversion",
+                      "viral"
+                    ],
+                    "description": "Strategy goal (default awareness)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/get_optimization_insights": {
+      "post": {
+        "operationId": "get_optimization_insights",
+        "summary": "Get optimization insights",
+        "description": "Analyse the last 30 days of post metrics with AI and return the best time of day, best tone, top hashtags, prompt suggestions and per-platform insights. Changes nothing, but each call counts against the monthly AI allowance.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "platform": {
+                    "type": "string",
+                    "enum": [
+                      "twitter",
+                      "linkedin",
+                      "instagram",
+                      "threads",
+                      "tiktok",
+                      "bluesky",
+                      "youtube"
+                    ],
+                    "description": "Only this platform's posts. Omit for all platforms."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/repurpose_content": {
+      "post": {
+        "operationId": "repurpose_content",
+        "summary": "Repurpose content into variants",
+        "description": "Turn one source — a URL, pasted text or markdown, or an RSS item — into channel-native variants such as an X thread, LinkedIn post or carousel, Instagram caption or reel script, newsletter, or YouTube description. Fetches the URL, extracts the core message, writes each variant with AI, and saves sou",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "source_type"
+                ],
+                "properties": {
+                  "source_type": {
+                    "type": "string",
+                    "enum": [
+                      "url",
+                      "text",
+                      "docforge",
+                      "rss"
+                    ],
+                    "description": "url: fetch source_url. text or docforge: use raw_content (pasted text or markdown). rss: pass the item's URL as source_url."
+                  },
+                  "source_url": {
+                    "type": "string",
+                    "description": "Source URL (required for source_type=url)."
+                  },
+                  "raw_content": {
+                    "type": "string",
+                    "description": "Source text or markdown, up to 20,000 characters (required for text/docforge)."
+                  },
+                  "formats": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "twitter_thread",
+                        "linkedin_post",
+                        "linkedin_carousel",
+                        "instagram_caption",
+                        "instagram_reel_script",
+                        "email_newsletter",
+                        "youtube_description",
+                        "slack_announcement",
+                        "reddit_post",
+                        "notion_page",
+                        "threads_post",
+                        "mastodon_post",
+                        "bluesky_post"
+                      ]
+                    },
+                    "description": "Which variants to write. Omit for all of them."
+                  },
+                  "tone": {
+                    "type": "string",
+                    "description": "Writing tone (default professional)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/get_contentripple_usage": {
+      "post": {
+        "operationId": "get_contentripple_usage",
+        "summary": "Get ContentRipple usage",
+        "description": "Show how many ContentRipple repurposes the user has run this month, their monthly limit (null means unlimited), and their plan tier. Check before a large repurposing run so it does not stop halfway.",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/schedule_content_variant": {
+      "post": {
+        "operationId": "schedule_content_variant",
+        "summary": "Schedule content variant",
+        "description": "Schedule a saved ContentRipple variant (its text plus hashtags) to a connected account of the matching platform at a given time. Only these formats can be published: twitter_thread, linkedin_post, linkedin_carousel, instagram_caption, instagram_reel_script, threads_post, mastodon_post, bluesky_post ",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "variant_id",
+                  "connected_account_id",
+                  "scheduled_at"
+                ],
+                "properties": {
+                  "variant_id": {
+                    "type": "string",
+                    "description": "Content variant UUID — from repurpose_content."
+                  },
+                  "connected_account_id": {
+                    "type": "string",
+                    "description": "Connected account UUID on the variant's platform — from list_connections."
+                  },
+                  "scheduled_at": {
+                    "type": "string",
+                    "description": "ISO 8601 datetime (UTC, e.g. 2030-01-01T09:00:00Z)."
+                  },
+                  "post_batch_id": {
+                    "type": "string",
+                    "description": "Optional UUID shared with sibling posts of the same content, for managing them together."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/get_trends": {
+      "post": {
+        "operationId": "get_trends",
+        "summary": "Get trending hashtags and hooks",
+        "description": "Get the latest trending hashtags and content hooks for the user's TrendPulse niches, each with a snapshot id. Returns cached results under two hours old, or refreshes them live from the trend sources.",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/queue_trend_drafts": {
+      "post": {
+        "operationId": "queue_trend_drafts",
+        "summary": "Queue trend-based drafts",
+        "description": "Turn 1–3 trend snapshots (from get_trends) into draft posts — one per snapshot for each platform the user has connected — saved to the draft queue (list_drafts). Nothing is scheduled or published.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "snapshot_ids"
+                ],
+                "properties": {
+                  "snapshot_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "description": "1–3 trend snapshot UUIDs — from get_trends."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/get_stats": {
+      "post": {
+        "operationId": "get_stats",
+        "summary": "Get overview stats",
+        "description": "Get the account overview: connected accounts, posts queued, published this week and this month, drafts waiting, the last published post, the top performing post of the month, and the average engagement rate (null when no metrics exist yet).",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/get_analytics_trends": {
+      "post": {
+        "operationId": "get_analytics_trends",
+        "summary": "Get channel trends",
+        "description": "Get per-channel daily trends for the last 7, 30 or 90 days: posts published and failed, engagement and impressions, totals, and the change against the previous period. Each channel's metric field says whether real engagement data exists for it (engagement) or only publish volume (posts) — never pres",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "days": {
+                    "type": "number",
+                    "enum": [
+                      7,
+                      30,
+                      90
+                    ],
+                    "description": "Window in days (default 30)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/get_growth_overview": {
+      "post": {
+        "operationId": "get_growth_overview",
+        "summary": "Get growth overview",
+        "description": "Get the Growth Hub overview for the last 7, 30 or 90 days: per-platform engagement trend lines, the weakest-performing platforms (bottlenecks), which post formats perform best, and which platforms have real trend data behind their suggestions. Requires the Empire plan; on other plans it returns an u",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "days": {
+                    "type": "number",
+                    "enum": [
+                      7,
+                      30,
+                      90
+                    ],
+                    "description": "Window in days (default 30)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/list_growth_opportunities": {
+      "post": {
+        "operationId": "list_growth_opportunities",
+        "summary": "List growth opportunities",
+        "description": "List rising trends worth posting about now, limited to the user's niches and to platforms they have connected, each with the hashtag, its growth, and a posting suggestion. Returns an empty list — never an invented one — when no real signal exists. Requires the Empire plan; on other plans it returns ",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/list_post_templates": {
+      "post": {
+        "operationId": "list_post_templates",
+        "summary": "List post templates",
+        "description": "List the user's saved post templates, most recently updated first — reusable composer states with text, per-platform overrides, target accounts, platform settings, media and first comment.",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/create_post_template": {
+      "post": {
+        "operationId": "create_post_template",
+        "summary": "Create post template",
+        "description": "Save a reusable post template: default text, optional per-platform text, target accounts, platform settings, media and first comment. Saving publishes nothing.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Template name (1–120 characters)."
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Default post text, up to 20,000 characters."
+                  },
+                  "content_overrides": {
+                    "type": "object",
+                    "description": "Per-platform text that replaces content for that platform, as platform → text.",
+                    "additionalProperties": true
+                  },
+                  "account_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Connected account UUIDs the template targets (max 50) — from list_connections."
+                  },
+                  "platform_settings": {
+                    "type": "object",
+                    "description": "Per-platform publish settings, as platform → settings object (same keys as schedule_post's platform_meta).",
+                    "additionalProperties": true
+                  },
+                  "media": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "url",
+                        "kind",
+                        "file_name"
+                      ],
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "description": "Public media URL."
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "image",
+                            "video"
+                          ]
+                        },
+                        "file_name": {
+                          "type": "string",
+                          "description": "Display file name (max 300 characters)."
+                        }
+                      }
+                    },
+                    "description": "Up to 10 media attachments."
+                  },
+                  "first_comment": {
+                    "type": "string",
+                    "description": "First comment text (max 2200 characters)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/list_post_tags": {
+      "post": {
+        "operationId": "list_post_tags",
+        "summary": "List post tags",
+        "description": "List the user's post tags (id, name, colour). Tag ids filter list_posts and get_calendar and are applied with schedule_post or update_post.",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/list_media": {
+      "post": {
+        "operationId": "list_media",
+        "summary": "List media",
+        "description": "List the user's uploaded media library, newest first, 24 per page, with each file's public URL — usable directly in schedule_post's media_urls.",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "number",
+                    "description": "1-indexed page (default 1, 24 items per page)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/create_video_script": {
+      "post": {
+        "operationId": "create_video_script",
+        "summary": "Write video script",
+        "description": "Write a short talking-presenter video script from a post's text. Saves nothing; counts against the monthly AI allowance. Show the script to the user before generate_video.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "post_text"
+                ],
+                "properties": {
+                  "post_text": {
+                    "type": "string",
+                    "description": "Post text to base the script on (1–4000 characters)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/list_personas": {
+      "post": {
+        "operationId": "list_personas",
+        "summary": "List personas",
+        "description": "List the user's PersonaForge personas — writing styles learned from a real account — plus extraction jobs still running and recent failures.",
+        "x-openai-isConsequential": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    },
+    "/mcp/tools/generate_persona_post": {
+      "post": {
+        "operationId": "generate_persona_post",
+        "summary": "Write post in persona voice",
+        "description": "Write a post about a topic in a persona's voice (or the user's own trained voice when no persona is given), with a voice-match score. The post is saved for review, not scheduled. Counts against the monthly PersonaForge post allowance.",
+        "x-openai-isConsequential": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "topic",
+                  "platform"
+                ],
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "description": "What the post is about (1–500 characters)."
+                  },
+                  "platform": {
+                    "type": "string",
+                    "description": "Platform to write for, e.g. linkedin or twitter."
+                  },
+                  "persona_id": {
+                    "type": "string",
+                    "description": "Persona UUID — from list_personas. Omit to use the user's own trained voice."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "description": "The tool's output — text or JSON."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body"
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "402": {
+            "description": "Plan limit — the body carries code: plan_limit_exceeded and an upgrade offer"
+          },
+          "404": {
+            "description": "Unknown tool"
+          },
+          "429": {
+            "description": "Rate limited, or a quota block carrying code: plan_limit_exceeded"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "MisarPost API key (mpk_…) from https://post.misar.io/dashboard/api-keys"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
