@@ -15,6 +15,7 @@ import { mediaTools } from "./tools/media.js";
 import { personaTools } from "./tools/personas.js";
 import { accountTools } from "./tools/account.js";
 import { reportToolCall } from "./lib/telemetry.js";
+import { assertSafeSource, assertSafeText, collectPostText, collectSourceText } from "./lib/safety-gate.js";
 
 /**
  * The single source of truth for MisarPost's MCP surface.
@@ -123,6 +124,10 @@ export async function dispatch(
     throw new MissingScopeError(tool.scopes);
   }
 
+  // Safety gate on the inputs, before the handler runs, so nothing is scheduled or saved.
+  assertSafeText(collectPostText(tool.name, args), tool.name);
+  assertSafeSource(collectSourceText(tool.name, args), tool.name);
+
   // Usage telemetry. Wrapped around the handler so a FAILING tool is recorded
   // too — a tool that errors for everyone is the most useful thing this can
   // surface, and only measuring successes would hide it entirely.
@@ -143,6 +148,8 @@ export async function dispatch(
     });
     throw err;
   }
+  // Safety gate on AI-written posts: refuse to return text that fails the check.
+  assertSafeText(collectPostText(tool.name, {}, result), tool.name);
   reportToolCall({
     server: "misarpost",
     product: "post",
